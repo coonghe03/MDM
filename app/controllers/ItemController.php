@@ -9,7 +9,40 @@ class ItemController {
     }
 
     // Create Item
-    public function create($brand_id, $category_id, $code, $name, $attachment, $status = "Active") {
+    public function create($brand_i<?php
+require_once __DIR__ . "/../config/database.php";
+
+class ItemController {
+    private $conn;
+
+    public function __construct($db) {
+        $this->conn = $db;
+    }
+
+    public function create($brand_id, $category_id, $code, $name, $attachment, $status = "Active", $user_id) {
+        if (empty($code) || strlen($code) < 2) {
+            return "Code must be at least 2 characters.";
+        }
+        if (empty($name) || strlen($name) < 3) {
+            return "Name must be at least 3 characters.";
+        }
+
+        $sql = "INSERT INTO master_items (brand_id, category_id, code, name, attachment, status, created_by) 
+                VALUES (:brand_id, :category_id, :code, :name, :attachment, :status, :created_by)";
+        $stmt = $this->conn->prepare($sql);
+        $ok = $stmt->execute([
+            ':brand_id' => $brand_id,
+            ':category_id' => $category_id,
+            ':code' => $code,
+            ':name' => $name,
+            ':attachment' => $attachment,
+            ':status' => $status,
+            ':created_by' => $user_id
+        ]);
+        return $ok ? true : "Failed to create item.";
+    }
+}
+d, $category_id, $code, $name, $attachment, $status = "Active") {
         $sql = "INSERT INTO master_items (brand_id, category_id, code, name, attachment, status) 
                 VALUES (:brand_id, :category_id, :code, :name, :attachment, :status)";
         $stmt = $this->conn->prepare($sql);

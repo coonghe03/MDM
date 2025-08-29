@@ -9,13 +9,15 @@ $brandCtrl = new BrandController($conn);
 $message = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if ($brandCtrl->create($_POST['code'], $_POST['name'], $_POST['status'])) {
+    $result = $brandCtrl->create($_POST['code'], $_POST['name'], $_POST['status'], $_SESSION['user_id']);
+    if ($result === true) {
         header("Location: brands.php");
         exit;
     } else {
-        $message = "Failed to create brand.";
+        $message = $result;
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html>
