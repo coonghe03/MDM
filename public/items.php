@@ -7,12 +7,16 @@ require_once "../app/controllers/ItemController.php";
 
 $itemCtrl = new ItemController($conn);
 
+// Search and filter
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$statusFilter = isset($_GET['status']) ? $_GET['status'] : '';
+
 $limit = 5;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
-$items = $itemCtrl->getAll($limit, $offset);
-$total = $itemCtrl->count();
+$items = $itemCtrl->getFiltered($limit, $offset, $search, $statusFilter);
+$total = $itemCtrl->countFiltered($search, $statusFilter);
 $totalPages = ceil($total / $limit);
 ?>
 <!DOCTYPE html>
@@ -21,6 +25,19 @@ $totalPages = ceil($total / $limit);
 <body>
     <h2>Item Management</h2>
     <a href="item_create.php">+ Add Item</a>
+
+    <form method="GET" style="margin:10px 0;">
+        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Search by code or name">
+        <select name="status">
+            <option value="">-- Status --</option>
+            <option value="Active" <?= $statusFilter=="Active" ? "selected" : "" ?>>Active</option>
+            <option value="Inactive" <?= $statusFilter=="Inactive" ? "selected" : "" ?>>Inactive</option>
+        </select>
+        <button type="submit">Search</button>
+        <a href="items.php">Reset</a>
+    </form>
+
+    
     <table border="1" cellpadding="5">
         <tr><th>ID</th><th>Code</th><th>Name</th><th>Brand</th><th>Category</th><th>Status</th><th>Attachment</th><th>Action</th></tr>
         <?php foreach ($items as $i): ?>
@@ -44,12 +61,16 @@ $totalPages = ceil($total / $limit);
         <?php endforeach; ?>
     </table>
 
+    
     <p>
     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-        <a href="?page=<?= $i ?>"><?= $i ?></a>
+        <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($statusFilter) ?>"><?= $i ?></a>
     <?php endfor; ?>
     </p>
 
-    <a href="dashboard.php">Back to Dashboard</a>
+    <a href="dashboard.php">Back to Dashboard</a> | 
+    <a href="export.php?format=csv">Export CSV</a> | 
+    <a href="export.php?format=excel">Export Excel</a> | 
+    <a href="export.php?format=pdf">Export PDF</a>
 </body>
 </html>

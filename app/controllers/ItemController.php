@@ -108,3 +108,51 @@ d, $category_id, $code, $name, $attachment, $status = "Active") {
         return $stmt->execute([':id' => $id]);
     }
 }
+
+// Filtered Items
+public function getFiltered($limit, $offset, $search, $status) {
+    $sql = "SELECT i.*, b.name as brand_name, c.name as category_name
+            FROM master_items i
+            JOIN master_brands b ON i.brand_id = b.id
+            JOIN master_categories c ON i.category_id = c.id
+            WHERE 1=1";
+
+    $params = [];
+    if ($search) {
+        $sql .= " AND (i.code LIKE :search OR i.name LIKE :search)";
+        $params[':search'] = "%$search%";
+    }
+    if ($status) {
+        $sql .= " AND i.status = :status";
+        $params[':status'] = $status;
+    }
+
+    $sql .= " ORDER BY i.id DESC LIMIT :limit OFFSET :offset";
+    $stmt = $this->conn->prepare($sql);
+
+    foreach ($params as $k => $v) {
+        $stmt->bindValue($k, $v);
+    }
+    $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+public function countFiltered($search, $status) {
+    $sql = "SELECT COUNT(*) as total FROM master_items WHERE 1=1";
+    $params = [];
+    if ($search) {
+        $sql .= " AND (code LIKE :search OR name LIKE :search)";
+        $params[':search'] = "%$search%";
+    }
+    if ($status) {
+        $sql .= " AND status = :status";
+        $params[':status'] = $status;
+    }
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+}
+
