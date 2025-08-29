@@ -12,7 +12,7 @@ $limit = 5;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
-$brands = $brandCtrl->getAll($limit, $offset);
+$brands = $brandCtrl->getAll($limit, $offset, $_SESSION['is_admin'], $_SESSION['user_id']);
 $total = $brandCtrl->count();
 $totalPages = ceil($total / $limit);
 ?>

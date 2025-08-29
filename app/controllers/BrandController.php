@@ -19,15 +19,21 @@ class BrandController {
         ]);
     }
 
-    // Get All Brands with Pagination
-    public function getAll($limit, $offset) {
+    // Get All Brands (with User Role)
+public function getAll($limit, $offset, $is_admin, $user_id) {
+    if ($is_admin) {
         $sql = "SELECT * FROM master_brands ORDER BY id DESC LIMIT :limit OFFSET :offset";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $sql = "SELECT * FROM master_brands WHERE created_by = :user_id ORDER BY id DESC LIMIT :limit OFFSET :offset";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
     }
+    $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
     // Count Brands (for pagination)
     public function count() {
